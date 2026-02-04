@@ -4,9 +4,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   await prisma.pokemonCard.deleteMany();
-  await prisma.user.deleteMany();
   await prisma.type.deleteMany();
-
   await prisma.type.createMany({
     data: [
       { name: 'Normal' },
@@ -47,13 +45,6 @@ async function main() {
       },
     });
   }
-
-  await prisma.user.create({
-    data: {
-      email: 'admin@gmail.com',
-      password: 'admin',
-    },
-  });
 }
 
 main()
