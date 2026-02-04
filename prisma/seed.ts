@@ -3,7 +3,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.pokemonCard.deleteMany();
+  await prisma.user.deleteMany();
   await prisma.type.deleteMany();
+
   await prisma.type.createMany({
     data: [
       { name: 'Normal' },
@@ -27,7 +30,30 @@ async function main() {
     ],
   });
 
-  console.log('Seed completed!');
+  const grassType = await prisma.type.findUnique({
+    where: { name: 'Grass' },
+  });
+
+  if (grassType) {
+    await prisma.pokemonCard.create({
+      data: {
+        name: 'Bulbizarre',
+        pokedexId: 1,
+        typeId: grassType.id,
+        lifePoints: 45,
+        size: 0.7,
+        weight: 6.9,
+        imageUrl: 'https://assets.pokemon.com/assets/cms2/img/pokedex/full/001.png',
+      },
+    });
+  }
+
+  await prisma.user.create({
+    data: {
+      email: 'admin@gmail.com',
+      password: 'admin',
+    },
+  });
 }
 
 main()
