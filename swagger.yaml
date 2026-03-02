@@ -65,3 +65,15 @@ paths:
           description: Pokémon supprimé
         '404':
           description: ID non trouvé
+  /users:
+    post:
+      summary: Créer un utilisateur
+      responses:
+        201:
+          description: Utilisateur créé
+  /users/login:
+    post:
+      summary: Se connecter
+      responses:
+        201:
+          description: JWT généré
