@@ -18,7 +18,7 @@ describe('User API', () => {
   });
 
   it('POST /users - 400 si email déjà utilisé', async () => {
-    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+    (prismaMock.user.create as jest.Mock).mockRejectedValue(new Error('Email déjà utilisé'));
     const res = await request(app).post('/users').send({ email: 'test@test.com', password: 'password123' });
     expect(res.status).toBe(400);
   });
@@ -33,5 +33,12 @@ describe('User API', () => {
     (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
     const res = await request(app).post('/users/login').send({ email: 'test@test.com', password: 'wrong' });
     expect(res.status).toBe(400);
+  });
+
+  it('POST /users/login - Succès', async () => {
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+    const res = await request(app).post('/users/login').send({ email: 'test@test.com', password: 'truePassword' });
+    expect(res.status).toBe(201);
+    expect(res.body.token).toBeDefined();
   });
 });

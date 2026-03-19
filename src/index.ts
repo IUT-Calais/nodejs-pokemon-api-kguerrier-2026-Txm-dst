@@ -16,7 +16,7 @@ try {
   const swaggerDocument = YAML.load(swaggerPath);
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 } catch (error) {
-  console.error("❌ Erreur de chargement du fichier swagger.yaml. Vérifie qu'il est à la racine du projet.");
+  console.error("Erreur de chargement du fichier swagger.yaml");
 }
 
 app.post('/users', register);
@@ -30,10 +30,8 @@ app.patch('/pokemons-cards/:pokemonCardId', authMiddleware, updatePokemon);
 app.delete('/pokemons-cards/:pokemonCardId', authMiddleware, deletePokemon);
 
 export const server = app.listen(port, () => {
-
   console.log(`Serveur démarré`);
   console.log(`URL : http://localhost:${port}`);
-
 });
 
 export function stopServer() {

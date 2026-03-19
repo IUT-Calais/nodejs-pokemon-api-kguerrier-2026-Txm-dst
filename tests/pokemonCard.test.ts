@@ -14,6 +14,12 @@ describe('PokemonCard API', () => {
     expect(res.status).toBe(200);
   });
 
+  it('GET /pokemons-cards/:id - Succès', async () => {
+    (prismaMock.pokemonCard.findUnique as jest.Mock).mockResolvedValue(mockPika);
+    const res = await request(app).get('/pokemons-cards/1');
+    expect(res.status).toBe(200);
+  });
+
   it('GET /pokemons-cards/:id - 404 si inexistant', async () => {
     (prismaMock.pokemonCard.findUnique as jest.Mock).mockResolvedValue(null);
     const res = await request(app).get('/pokemons-cards/999');
@@ -28,6 +34,34 @@ describe('PokemonCard API', () => {
     expect(res.status).toBe(400);
   });
 
+  it('POST /pokemons-cards - Succès', async () => {
+    (prismaMock.pokemonCard.create as jest.Mock).mockResolvedValue(mockPika);
+    const res = await request(app)
+      .post('/pokemons-cards')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({ name: 'Pikachu', pokedexId: 25, typeId: 1, lifePoints: 35 });
+    expect(res.status).toBe(201);
+  });
+
+  it('POST /pokemons-cards - 400 si doublon ou type inexistant', async () => {
+    (prismaMock.pokemonCard.create as jest.Mock).mockRejectedValue(new Error('Doublon'));
+    const res = await request(app)
+      .post('/pokemons-cards')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({ name: 'Pikachu', pokedexId: 25, typeId: 1, lifePoints: 35 });
+    expect(res.status).toBe(400);
+  });
+
+  it('PATCH /pokemons-cards/:id - Succès', async () => {
+    (prismaMock.pokemonCard.findUnique as jest.Mock).mockResolvedValue(mockPika);
+    (prismaMock.pokemonCard.update as jest.Mock).mockResolvedValue({ ...mockPika, name: 'New' });
+    const res = await request(app)
+      .patch('/pokemons-cards/1')
+      .set('Authorization', `Bearer ${validToken}`)
+      .send({ name: 'New' });
+    expect(res.status).toBe(200);
+  });
+
   it('PATCH /pokemons-cards/:id - 404 si inexistant', async () => {
     (prismaMock.pokemonCard.findUnique as jest.Mock).mockResolvedValue(null);
     const res = await request(app)
@@ -35,6 +69,15 @@ describe('PokemonCard API', () => {
       .set('Authorization', `Bearer ${validToken}`)
       .send({ name: 'New' });
     expect(res.status).toBe(404);
+  });
+
+  it('DELETE /pokemons-cards/:id - Succès', async () => {
+    (prismaMock.pokemonCard.findUnique as jest.Mock).mockResolvedValue(mockPika);
+    (prismaMock.pokemonCard.delete as jest.Mock).mockResolvedValue(mockPika);
+    const res = await request(app)
+      .delete('/pokemons-cards/1')
+      .set('Authorization', `Bearer ${validToken}`);
+    expect(res.status).toBe(204);
   });
 
   it('DELETE /pokemons-cards/:id - 404 si inexistant', async () => {
@@ -49,6 +92,13 @@ describe('PokemonCard API', () => {
     const res = await request(app)
       .post('/pokemons-cards')
       .set('Authorization', 'Bearer mauvais-token');
+    expect(res.status).toBe(401);
+  });
+
+  it('Auth - 401 si pas de préfixe', async () => {
+    const res = await request(app)
+      .post('/pokemons-cards')
+      .set('Authorization', validToken);
     expect(res.status).toBe(401);
   });
 });
