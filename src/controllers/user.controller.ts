@@ -42,7 +42,7 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign(
         { userId: user.id, email: user.email },
         secret,
-        { expiresIn: expires as any } // Le "as any" règle le conflit de type sur expires
+        { expiresIn: expires as any }
     );
 
     res.status(201).json({
