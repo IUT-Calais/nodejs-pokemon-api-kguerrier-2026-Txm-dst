@@ -1,62 +1,47 @@
-openapi: 3.0.0
+---
 info:
+  description: API pour gérer une collection de cartes Pokémon
   title: Pokémon Cards API
   version: 1.0.0
-  description: API pour gérer une collection de cartes Pokémon
+openapi: 3.0.0
 paths:
   /pokemons-cards:
     get:
-      summary: Récupérer tous les Pokémon
       responses:
         '200':
           description: Liste des Pokémon
+      summary: Récupérer tous les Pokémon
     post:
-      summary: Créer un nouveau Pokémon
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
               properties:
-                name: { type: string }
-                pokedexId: { type: integer }
-                typeId: { type: integer }
-                lifePoints: { type: integer }
-                size: { type: number }
-                weight: { type: number }
-                imageUrl: { type: string }
+                imageUrl:
+                  type: string
+                lifePoints:
+                  type: integer
+                name:
+                  type: string
+                pokedexId:
+                  type: integer
+                size:
+                  type: number
+                typeId:
+                  type: integer
+                weight:
+                  type: number
+              type: object
+        required: true
       responses:
         '201':
           description: Pokémon créé
-
+      summary: Créer un nouveau Pokémon
   /pokemons-cards/{pokemonCardId}:
-    patch:
-      summary: Modifier un Pokémon
-      parameters:
-        - name: pokemonCardId
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                lifePoints: { type: integer }
-      responses:
-        '200':
-          description: Pokémon mis à jour
-        '404':
-          description: ID non trouvé
     delete:
-      summary: Supprimer un Pokémon
       parameters:
-        - name: pokemonCardId
-          in: path
+        - in: path
+          name: pokemonCardId
           required: true
           schema:
             type: integer
@@ -65,15 +50,73 @@ paths:
           description: Pokémon supprimé
         '404':
           description: ID non trouvé
+      summary: Supprimer un Pokémon
+    patch:
+      parameters:
+        - in: path
+          name: pokemonCardId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                lifePoints:
+                  type: integer
+                name:
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Pokémon mis à jour
+        '404':
+          description: ID non trouvé
+      summary: Modifier un Pokémon
   /users:
     post:
-      summary: Créer un utilisateur
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  example: admin@test.fr
+                  type: string
+                password:
+                  example: password123
+                  type: string
+              required: [email, password]
+              type: object
+        required: true
       responses:
-        201:
+        '201':
           description: Utilisateur créé
+        '400':
+          description: Champs manquants ou email déjà utilisé
+      summary: Créer un utilisateur
   /users/login:
     post:
-      summary: Se connecter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  example: admin@test.fr
+                  type: string
+                password:
+                  example: password123
+                  type: string
+              required: [email, password]
+              type: object
+        required: true
       responses:
-        201:
-          description: JWT généré
+        '201':
+          description: Connexion réussie, renvoie le token
+        '400':
+          description: Mot de passe incorrect
+        '404':
+          description: Utilisateur non trouvé
+      summary: Se connecter
