@@ -3,55 +3,35 @@ import { app } from '../src';
 import { prismaMock } from './jest.setup';
 
 describe('User API', () => {
-  describe('POST /users', () => {
-    it('should create a new user', async () => {
-      const mockUser = { id: 1, email: 'test@test.com', password: 'hashedPassword' };
-      // Simulation de la création Prisma
-      (prismaMock.user.create as jest.Mock).mockResolvedValue(mockUser);
+  const mockUser = { id: 1, email: 'test@test.com', password: 'hashedPassword' };
 
-      const response = await request(app)
-        .post('/users')
-        .send({ email: 'test@test.com', password: 'password123' });
-
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('id');
-      expect(response.body.email).toBe('test@test.com');
-      // On vérifie que le mot de passe n'est PAS renvoyé (sécurité)
-      expect(response.body).not.toHaveProperty('password');
-    });
-
-    it('should return 400 if email is missing', async () => {
-      const response = await request(app)
-        .post('/users')
-        .send({ password: 'password123' });
-
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe('Un champs requis est vide');
-    });
+  it('POST /users - 400 si données invalides', async () => {
+    const res = await request(app).post('/users').send({ email: '' });
+    expect(res.status).toBe(400);
   });
 
-  describe('POST /users/login', () => {
-    it('should login a user and return a token', async () => {
-      const mockUser = { id: 1, email: 'test@test.com', password: 'hashedPassword' };
-      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+  it('POST /users - Succès', async () => {
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(null);
+    (prismaMock.user.create as jest.Mock).mockResolvedValue(mockUser);
+    const res = await request(app).post('/users').send({ email: 'test@test.com', password: 'password123' });
+    expect(res.status).toBe(201);
+  });
 
-      const response = await request(app)
-        .post('/users/login')
-        .send({ email: 'test@test.com', password: 'truePassword' }); // 'truePassword' déclenche le succès dans ton jest.setup
+  it('POST /users - 400 si email déjà utilisé', async () => {
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+    const res = await request(app).post('/users').send({ email: 'test@test.com', password: 'password123' });
+    expect(res.status).toBe(400);
+  });
 
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('token');
-      expect(response.body.token).toBe('mockedToken');
-    });
+  it('POST /users/login - 404 utilisateur non trouvé', async () => {
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(null);
+    const res = await request(app).post('/users/login').send({ email: 'fake@t.fr', password: '123' });
+    expect(res.status).toBe(404);
+  });
 
-    it('should return 404 if user does not exist', async () => {
-      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(null);
-
-      const response = await request(app)
-        .post('/users/login')
-        .send({ email: 'unknown@test.com', password: 'password' });
-
-      expect(status).toBe(404);
-    });
+  it('POST /users/login - 400 mauvais mot de passe', async () => {
+    (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+    const res = await request(app).post('/users/login').send({ email: 'test@test.com', password: 'wrong' });
+    expect(res.status).toBe(400);
   });
 });

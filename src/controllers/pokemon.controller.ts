@@ -13,7 +13,7 @@ export const getAllPokemons = async (req: Request, res: Response) => {
 export const getPokemonById = async (req: Request, res: Response) => {
   const { pokemonCardId } = req.params;
   const pokemon = await prisma.pokemonCard.findUnique({
-    where: { id: parseInt(pokemonCardId) },
+    where: { id: parseInt(pokemonCardId as string) },
     include: { type: true }
   });
 
@@ -50,27 +50,38 @@ export const createPokemon = async (req: Request, res: Response) => {
 
 export const updatePokemon = async (req: Request, res: Response) => {
   const { pokemonCardId } = req.params;
-  
-  try {
-    const updated = await prisma.pokemonCard.update({
-      where: { id: parseInt(pokemonCardId) },
-      data: req.body
-    });
-    res.status(200).json(updated);
-  } catch (error) {
-    res.status(404).json({ message: "L'id renseigné n'existe pas" });
+  const { name, lifePoints, typeId, pokedexId } = req.body;
+
+  const pokemon = await prisma.pokemonCard.findUnique({
+    where: { id: parseInt(pokemonCardId as string) },
+  });
+
+  if (!pokemon) {
+    return res.status(404).json({ message: "Pokémon non trouvé" });
   }
+
+  const updated = await prisma.pokemonCard.update({
+    where: { id: parseInt(pokemonCardId as string) },
+    data: { name, lifePoints, typeId, pokedexId },
+  });
+
+  res.status(200).json(updated);
 };
 
 export const deletePokemon = async (req: Request, res: Response) => {
   const { pokemonCardId } = req.params;
 
-  try {
-    await prisma.pokemonCard.delete({
-      where: { id: parseInt(pokemonCardId) }
-    });
-    res.status(204).send();
-  } catch (error) {
-    res.status(404).json({ message: "L'id renseigné n'existe pas" });
+  const pokemon = await prisma.pokemonCard.findUnique({
+    where: { id: parseInt(pokemonCardId as string) },
+  });
+
+  if (!pokemon) {
+    return res.status(404).json({ message: "Pokémon non trouvé" });
   }
+
+  await prisma.pokemonCard.delete({
+    where: { id: parseInt(pokemonCardId as string) },
+  });
+
+  res.status(204).send();
 };

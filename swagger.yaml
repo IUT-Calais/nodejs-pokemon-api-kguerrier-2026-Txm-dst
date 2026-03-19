@@ -104,10 +104,8 @@ paths:
             schema:
               properties:
                 email:
-                  example: admin@test.fr
                   type: string
                 password:
-                  example: password123
                   type: string
               required: [email, password]
               type: object
