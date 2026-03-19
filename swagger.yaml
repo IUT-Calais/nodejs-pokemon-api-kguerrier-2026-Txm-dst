@@ -12,33 +12,92 @@ paths:
           description: Liste des Pokémon
       summary: Récupérer tous les Pokémon
     post:
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
             schema:
+              required: [name, pokedexId, typeId, lifePoints]
               properties:
-                imageUrl:
-                  type: string
-                lifePoints:
-                  type: integer
                 name:
                   type: string
                 pokedexId:
                   type: integer
-                size:
-                  type: number
                 typeId:
                   type: integer
+                lifePoints:
+                  type: integer
+                weaknessId:
+                  type: integer
+                  nullable: true
+                size:
+                  type: number
                 weight:
                   type: number
+                imageUrl:
+                  type: string
               type: object
         required: true
       responses:
         '201':
           description: Pokémon créé
+        '400':
+          description: Champs manquants ou doublon
+        '401':
+          description: Non autorisé
       summary: Créer un nouveau Pokémon
   /pokemons-cards/{pokemonCardId}:
+    get:
+      parameters:
+        - in: path
+          name: pokemonCardId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pokémon trouvé
+        '404':
+          description: ID non trouvé
+      summary: Récupérer un Pokémon par son ID
+    patch:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: pokemonCardId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                lifePoints:
+                  type: integer
+                typeId:
+                  type: integer
+                pokedexId:
+                  type: integer
+                weaknessId:
+                  type: integer
+                  nullable: true
+              type: object
+      responses:
+        '200':
+          description: Pokémon mis à jour
+        '404':
+          description: ID non trouvé
+        '401':
+          description: Non autorisé
+      summary: Modifier un Pokémon
     delete:
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: pokemonCardId
@@ -50,30 +109,9 @@ paths:
           description: Pokémon supprimé
         '404':
           description: ID non trouvé
+        '401':
+          description: Non autorisé
       summary: Supprimer un Pokémon
-    patch:
-      parameters:
-        - in: path
-          name: pokemonCardId
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                lifePoints:
-                  type: integer
-                name:
-                  type: string
-              type: object
-      responses:
-        '200':
-          description: Pokémon mis à jour
-        '404':
-          description: ID non trouvé
-      summary: Modifier un Pokémon
   /users:
     post:
       requestBody:
@@ -96,6 +134,15 @@ paths:
         '400':
           description: Champs manquants ou email déjà utilisé
       summary: Créer un utilisateur
+    get:
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des utilisateurs
+        '401':
+          description: Non autorisé
+      summary: Récupérer tous les utilisateurs
   /users/login:
     post:
       requestBody:
@@ -118,3 +165,73 @@ paths:
         '404':
           description: Utilisateur non trouvé
       summary: Se connecter
+  /users/{userId}:
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Utilisateur trouvé
+        '404':
+          description: Utilisateur non trouvé
+        '401':
+          description: Non autorisé
+      summary: Récupérer un utilisateur par son ID
+    patch:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: Utilisateur mis à jour
+        '404':
+          description: Utilisateur non trouvé
+        '400':
+          description: Email déjà utilisé
+        '401':
+          description: Non autorisé
+      summary: Modifier un utilisateur
+    delete:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Utilisateur supprimé
+        '404':
+          description: Utilisateur non trouvé
+        '401':
+          description: Non autorisé
+      summary: Supprimer un utilisateur
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

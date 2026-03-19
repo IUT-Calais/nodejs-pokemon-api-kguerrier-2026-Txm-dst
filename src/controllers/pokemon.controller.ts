@@ -4,7 +4,8 @@ import prisma from '../client';
 export const getAllPokemons = async (req: Request, res: Response) => {
   const pokemons = await prisma.pokemonCard.findMany({
     include: {
-      type: true
+      type: true,
+      weakness: true
     }
   });
   res.status(200).json(pokemons);
@@ -14,7 +15,7 @@ export const getPokemonById = async (req: Request, res: Response) => {
   const { pokemonCardId } = req.params;
   const pokemon = await prisma.pokemonCard.findUnique({
     where: { id: parseInt(pokemonCardId as string) },
-    include: { type: true }
+    include: { type: true, weakness: true }
   });
 
   if (!pokemon) {
@@ -24,7 +25,7 @@ export const getPokemonById = async (req: Request, res: Response) => {
 };
 
 export const createPokemon = async (req: Request, res: Response) => {
-  const { name, pokedexId, typeId, lifePoints, size, weight, imageUrl } = req.body;
+  const { name, pokedexId, typeId, lifePoints, size, weight, imageUrl, weaknessId } = req.body;
 
   if (!name || !pokedexId || !typeId || !lifePoints) {
     return res.status(400).json({ message: 'Champs requis vides' });
@@ -39,7 +40,8 @@ export const createPokemon = async (req: Request, res: Response) => {
         lifePoints,
         size,
         weight,
-        imageUrl
+        imageUrl,
+        weaknessId: weaknessId || null
       }
     });
     res.status(201).json(newPokemon);
@@ -50,7 +52,7 @@ export const createPokemon = async (req: Request, res: Response) => {
 
 export const updatePokemon = async (req: Request, res: Response) => {
   const { pokemonCardId } = req.params;
-  const { name, lifePoints, typeId, pokedexId } = req.body;
+  const { name, lifePoints, typeId, pokedexId, weaknessId } = req.body;
 
   const pokemon = await prisma.pokemonCard.findUnique({
     where: { id: parseInt(pokemonCardId as string) },
@@ -62,7 +64,7 @@ export const updatePokemon = async (req: Request, res: Response) => {
 
   const updated = await prisma.pokemonCard.update({
     where: { id: parseInt(pokemonCardId as string) },
-    data: { name, lifePoints, typeId, pokedexId },
+    data: { name, lifePoints, typeId, pokedexId, weaknessId: weaknessId ?? undefined },
   });
 
   res.status(200).json(updated);
